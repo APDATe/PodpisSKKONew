@@ -55,8 +55,12 @@ namespace PodpisSKKO
 
             string command = Path.Combine(nPathAvest, "AvCmUt4.exe");
 
+            // Получаем путь к директории с EXE
+            string logPath = Path.Combine(outputDirectory, "AvCmUt4.log");
+
             // 4. Составление параметров (пример — подпись файла)
-            string args = $"-s \"{inputFile}\" -T -m1 -M -o \"{outputFile}\"";
+            // Формируем аргументы
+            string args = $"-s \"{inputFile}\" -T -m1 -M -LOG \"{logPath}\" -o \"{outputFile}\"";
 
             // 5. Запуск процесса
             try
