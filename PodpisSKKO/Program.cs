@@ -15,37 +15,37 @@ namespace PodpisSKKO
         [STAThread]
         static void Main()
         {
-            // 1. Выбор файла для подписи
+            // 1. Р’С‹Р±РѕСЂ С„Р°Р№Р»Р° РґР»СЏ РїРѕРґРїРёСЃРё
             OpenFileDialog fileDialog = new OpenFileDialog
             {
-                Title = "Выберите файл, который нужно подписать",
-                Filter = "Все файлы (*.*)|*.*"
+                Title = "Р’С‹Р±РµСЂРёС‚Рµ С„Р°Р№Р», РєРѕС‚РѕСЂС‹Р№ РЅСѓР¶РЅРѕ РїРѕРґРїРёСЃР°С‚СЊ",
+                Filter = "Р’СЃРµ С„Р°Р№Р»С‹ (*.*)|*.*"
             };
 
             if (fileDialog.ShowDialog() != DialogResult.OK)
             {
-                MessageBox.Show("Файл не выбран.");
+                MessageBox.Show("Р¤Р°Р№Р» РЅРµ РІС‹Р±СЂР°РЅ.");
                 return;
             }
 
             string inputFile = fileDialog.FileName;
 
-            // 2. Выбор папки для сохранения подписи
+            // 2. Р’С‹Р±РѕСЂ РїР°РїРєРё РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ РїРѕРґРїРёСЃРё
             FolderBrowserDialog folderDialog = new FolderBrowserDialog
             {
-                Description = "Выберите папку для сохранения подписанного файла"
+                Description = "Р’С‹Р±РµСЂРёС‚Рµ РїР°РїРєСѓ РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ РїРѕРґРїРёСЃР°РЅРЅРѕРіРѕ С„Р°Р№Р»Р°"
             };
 
             if (folderDialog.ShowDialog() != DialogResult.OK)
             {
-                MessageBox.Show("Папка не выбрана.");
+                MessageBox.Show("РџР°РїРєР° РЅРµ РІС‹Р±СЂР°РЅР°.");
                 return;
             }
 
             string outputDirectory = folderDialog.SelectedPath;
             string outputFile = Path.Combine(outputDirectory, Path.GetFileName(inputFile) + ".p7s");
 
-            // 3. Определение пути к AvCmUt4.exe
+            // 3. РћРїСЂРµРґРµР»РµРЅРёРµ РїСѓС‚Рё Рє AvCmUt4.exe
             string nPathAvest;
             if (Environment.Is64BitOperatingSystem)
             {
@@ -60,10 +60,10 @@ namespace PodpisSKKO
 
             string command = Path.Combine(nPathAvest, "AvCmUt4.exe");
 
-            // 4. Составление параметров (пример — подпись файла)
+            // 4. РЎРѕСЃС‚Р°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂРѕРІ (РїСЂРёРјРµСЂ вЂ” РїРѕРґРїРёСЃСЊ С„Р°Р№Р»Р°)
             string args = $"-s \"{inputFile}\" -T -m1 -M -o \"{outputFile}\"";
 
-            // 5. Запуск процесса
+            // 5. Р—Р°РїСѓСЃРє РїСЂРѕС†РµСЃСЃР°
             try
             {
                 Process process = new Process();
@@ -75,11 +75,11 @@ namespace PodpisSKKO
                 process.Start();
                 process.WaitForExit();
 
-                MessageBox.Show("Файл успешно подписан:\n" + outputFile, "Успех");
+                MessageBox.Show("Р¤Р°Р№Р» СѓСЃРїРµС€РЅРѕ РїРѕРґРїРёСЃР°РЅ:\n" + outputFile, "РЈСЃРїРµС…");
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Ошибка при запуске AvCmUt4:\n" + ex.Message, "Ошибка");
+                MessageBox.Show("РћС€РёР±РєР° РїСЂРё Р·Р°РїСѓСЃРєРµ AvCmUt4:\n" + ex.Message, "РћС€РёР±РєР°");
             }
         }
     }
