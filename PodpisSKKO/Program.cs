@@ -1,15 +1,17 @@
 using System.Diagnostics;
+using System.Windows.Forms;
+using System.IO;
 
 namespace PodpisSKKO
 {
     internal static class Program
     {
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
         [STAThread]
         static void Main()
         {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
             // 1. Выбор файла для подписи
             OpenFileDialog fileDialog = new OpenFileDialog
             {
@@ -19,7 +21,7 @@ namespace PodpisSKKO
 
             if (fileDialog.ShowDialog() != DialogResult.OK)
             {
-                MessageBox.Show("Файл не выбран.");
+                LogMessage("Файл не выбран.", Directory.GetCurrentDirectory());
                 return;
             }
 
@@ -33,36 +35,58 @@ namespace PodpisSKKO
 
             if (folderDialog.ShowDialog() != DialogResult.OK)
             {
-                MessageBox.Show("Папка не выбрана.");
+                LogMessage("Папка не выбрана.", Directory.GetCurrentDirectory());
                 return;
             }
 
             string outputDirectory = folderDialog.SelectedPath;
-            string outputFile = Path.Combine(outputDirectory, Path.GetFileName(inputFile) + ".p7s");
+            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string fileNameJson = Path.GetFileName(inputFile);
+            string outputFile = Path.Combine(outputDirectory, $"{timestamp}_{fileNameJson}.p7s");
 
-            // 3. Определение пути к AvCmUt4.exe
-            string nPathAvest;
-            if (Environment.Is64BitOperatingSystem)
+            // 3. Удаление существующего файла, если он есть
+            if (File.Exists(outputFile))
             {
-                string program_files_x86_folder = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-                nPathAvest = Path.Combine(program_files_x86_folder, @"Avest\AvPCM_nces");
+                try
+                {
+                    File.Delete(outputFile);
+                    LogMessage($"Удалён существующий файл подписи: {outputFile}", outputDirectory);
+                }
+                catch (Exception delEx)
+                {
+                    LogMessage("Ошибка при удалении файла подписи: " + delEx.Message, outputDirectory);
+                    return;
+                }
             }
-            else
+
+            // 4. Копирование JSON-файла, если он отсутствует
+            string destinationJsonPath = Path.Combine(outputDirectory, fileNameJson);
+            if (!File.Exists(destinationJsonPath))
             {
-                string program_files_folder = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-                nPathAvest = Path.Combine(program_files_folder, @"Avest\AvPCM_nces");
+                try
+                {
+                    File.Copy(inputFile, destinationJsonPath, false);
+                    LogMessage($"Скопирован JSON-файл: {fileNameJson}", outputDirectory);
+                }
+                catch (Exception copyEx)
+                {
+                    LogMessage("Ошибка копирования JSON-файла: " + copyEx.Message, outputDirectory);
+                    return;
+                }
             }
+
+            // 5. Определение пути к AvCmUt4.exe
+            string nPathAvest = Environment.Is64BitOperatingSystem
+                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), @"Avest\AvPCM_nces")
+                : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"Avest\AvPCM_nces");
 
             string command = Path.Combine(nPathAvest, "AvCmUt4.exe");
-
-            // Получаем путь к директории с EXE
             string logPath = Path.Combine(outputDirectory, "AvCmUt4.log");
 
-            // 4. Составление параметров (пример — подпись файла)
-            // Формируем аргументы
+            // 6. Аргументы для процесса подписи
             string args = $"-s \"{inputFile}\" -T -m1 -M -LOG \"{logPath}\" -o \"{outputFile}\"";
 
-            // 5. Запуск процесса
+            // 7. Запуск подписи
             try
             {
                 Process process = new Process();
@@ -74,11 +98,26 @@ namespace PodpisSKKO
                 process.Start();
                 process.WaitForExit();
 
-                MessageBox.Show("Файл успешно подписан:\n" + outputFile, "Успех");
+                LogMessage($"Файл успешно подписан: {outputFile}", outputDirectory);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Ошибка при запуске AvCmUt4:\n" + ex.Message, "Ошибка");
+                LogMessage("Ошибка при запуске AvCmUt4: " + ex.Message, outputDirectory);
+            }
+        }
+
+        static void LogMessage(string message, string directory)
+        {
+            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string logFilePath = Path.Combine(directory, $"{timestamp}_LOG.txt");
+
+            try
+            {
+                File.AppendAllText(logFilePath, $"{DateTime.Now:HH:mm:ss} - {message}\n");
+            }
+            catch
+            {
+                // Ошибки логирования игнорируются
             }
         }
     }
