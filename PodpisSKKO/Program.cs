@@ -61,7 +61,7 @@ namespace PodpisSKKO
             string command = Path.Combine(nPathAvest, "AvCmUt4.exe");
 
             // 4. Составление параметров (пример — подпись файла)
-            string args = $"-s \"{inputFile}\" -o \"{outputFile}\"";
+            string args = $"-s \"{inputFile}\" -T -m1 -M -o \"{outputFile}\"";
 
             // 5. Запуск процесса
             try
